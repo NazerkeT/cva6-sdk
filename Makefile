@@ -98,10 +98,10 @@ rootfs/tetris:
 	cd ./vitetris/ && make clean && ./configure CC=riscv64-unknown-linux-gnu-gcc && make
 	cp ./vitetris/tetris $@
 
-vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(RISCV)/bin/riscv64-unknown-elf-gcc $(RISCV)/bin/riscv64-unknown-linux-gnu-gcc cachetest rootfs/tetris
+vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(RISCV)/bin/riscv64-unknown-elf-gcc $(RISCV)/bin/riscv64-unknown-linux-gnu-gcc cachetest
 	mkdir -p build
 	make -C buildroot defconfig BR2_DEFCONFIG=../$(buildroot_defconfig)
-	make -C buildroot
+	make -C buildroot -j20
 	cp buildroot/output/images/vmlinux build/vmlinux
 	cp build/vmlinux vmlinux
 
