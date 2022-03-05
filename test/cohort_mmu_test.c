@@ -2,11 +2,11 @@
     Test application for the Cohort MMU Driver
 */
 
-#include <linux/syscalls.h>
+// #include <linux/syscalls.h>
 #include <asm/unistd.h>
 
 #include <stdio.h>
-#include "util.h"
+// #include "util.h"
 #include "cohort_fifo.h"
 #include <time.h>
 
@@ -58,6 +58,8 @@ static uint32_t Ap[NUM_WORDS] = {0x33221100,
 #ifndef NUM_A
     #define NUM_A 1
 #endif
+
+extern int printf(const char *format, ...);
 
 void _kernel_(uint32_t id, uint32_t core_num){
     dec_open_producer(id);
@@ -157,6 +159,7 @@ int main(int argc, char ** argv) {
 
     if (PRODUCER_FIFO_LENGTH < CONSUMER_FIFO_LENGTH ) {
         printf("trying to consume more than produced, exiting\n");
+        fflush(stdout);
         exit(-1);
     }
     
@@ -187,14 +190,17 @@ int main(int argc, char ** argv) {
     // start the count
     baremetal_write(0, 7, write_value);
    
-    print("Cohort MMU Driver test application entered!\n");
+    printf("Cohort MMU Driver test application entered, v2!\n");
+    fflush(stdout);
 
     unsigned int *base_ptr;
 
     int ret = syscall(258, base_ptr);
 
-    print("Syscall result for the mmu_notifier register is: %d\n", ret);
-    print("Bse pointer addr for the mmu_notifier register is: %x\n", *base_ptr);
+    printf("Syscall result for the mmu_notifier register is: %d\n", ret);
+    fflush(stdout);
+    printf("Bse pointer addr for the mmu_notifier register is: %x\n", *base_ptr);
+    fflush(stdout);
 
     // to be continued for testing page_fault and tlb_flush :)
    
