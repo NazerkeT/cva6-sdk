@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "util.h"
+// #include "util.h"
 #include "cohort_fifo.h"
 #include <time.h>
 
@@ -147,8 +147,11 @@ int main(int argc, char ** argv) {
     uint32_t id, core_num;
     id = 0;
     core_num = 1;
+    printf("Before init_tile(), v2\n");
     // only make the first ariane initialize the tile
     if (id == 0) init_tile(NUM_A);
+
+    printf("After init_tile()\n");
 
     if (PRODUCER_FIFO_LENGTH < CONSUMER_FIFO_LENGTH ) {
         printf("trying to consume more than produced, exiting\n");
@@ -159,10 +162,15 @@ int main(int argc, char ** argv) {
     // 32 bits elements, fifo length = 8
     fifo_ctrl_t *sw_to_cohort_fifo = fifo_init( 512 + 32, 64, 0);
     fifo_ctrl_t *cohort_to_sw_fifo = fifo_init( 512 + 32, 64, 1);
+
+    printf("After fifo_init()\n");
     void *acc_address = memalign(128, 128);
     memset(acc_address, 0, 128);
 
+    printf("After mem_set()\n");
     baremetal_write(0, 6, (uint64_t) acc_address);
+
+    printf("After fifo_init()\n");
 
     pthread_t thread_id;
 
@@ -170,6 +178,8 @@ int main(int argc, char ** argv) {
     cohort_on();
     clock_t start, end;
     double cpu_time_used;
+
+    printf("After cohort_on()\n");
 
     unsigned long long int write_value = 11;
     unsigned long long int serialization_value = SERIALIZATION_VAL;
@@ -181,21 +191,28 @@ int main(int argc, char ** argv) {
     write_value |= serialization_value << 32;
     write_value |= deserialization_value << 16;
     write_value |= wait_counter << 4;
+
+    printf("After shifters\n");
     __sync_synchronize;
-    
+    printf("After sync\n");
     sleep(4);
     
     // start the count
     baremetal_write(0, 7, write_value);
+    printf("After baremetal write\n");
     start = clock();
 
     int err = pthread_create(&thread_id, NULL, producer_func, (void *) sw_to_cohort_fifo);
-   
+    printf("After pthread create\n");
+
     for (int i = 0; i < CONSUMER_FIFO_LENGTH ; i++) {
         cohort_to_sw_fifo->fifo_pop_func(cohort_to_sw_fifo);
     }
+    printf("After cohort producer\n");
 
     err = pthread_join(thread_id, NULL);
+
+    printf("After pthread join\n");
 
     end = clock();
     

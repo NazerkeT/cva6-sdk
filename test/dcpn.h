@@ -307,16 +307,22 @@ uint32_t dec_fifo_init_conf(uint32_t count, uint32_t size, void * A, void * B, u
   if (!allocated_tiles) return 0;
   // IF VIRTUAL MEMORY, THEN GET THE PAGE TABLE BASE
   conf_tlb_addr = syscall(258) >> 12;
+  printf("After syscall inside dcpn.h\n");
   if (conf_tlb_addr == -1 ) {
-      exit(-1);
+    printf("After syscall: before exit\n");
+    exit(-1);
   }
 #endif
+  printf("After syscall: before cleanup, all-d tiles: %d\n", allocated_tiles);
   //printDebug(dec_fifo_debug(0,2));
   dec_fifo_cleanup(allocated_tiles);
+  printf("After syscall and cleanup!\n");
   __sync_synchronize; //Compiler should not reorder the next load
+  printf("After syscall and sync!\n");
   //printDebug(dec_fifo_debug(0,2));
   uint32_t i = 0;
   uint32_t res_producer_conf;
+  printf("After syscall: before do loop\n");
   do { // Do the best allocation based on the number of tiles!
     // INIT_TILE: Target to allocate "len" queues per Tile
     uint64_t addr_maple = (base[i] | (size << FIFO));
@@ -328,11 +334,15 @@ uint32_t dec_fifo_init_conf(uint32_t count, uint32_t size, void * A, void * B, u
 #ifndef BARE_METAL
 //    dec_disable_tlb(i);
 //#else
+    printf("After syscall: before set tlb ptbase\n");
     dec_set_tlb_ptbase(i,conf_tlb_addr);
 #endif
     i++;
+
+    printf("After syscall: loop status, i: %d, allocated_tiles: %d, res_producer_conf: %d\n", i, allocated_tiles, res_producer_conf);
   } while (i<allocated_tiles && res_producer_conf > 0);
   // count configured tiles
+  printf("After syscall and do-while loop!\n");
   uint32_t config_tiles = i;
   if (!res_producer_conf) config_tiles--;
 
@@ -363,12 +373,17 @@ uint32_t dec_fifo_cleanup(uint32_t tile) {
 #if defined(DEC_DEBUG)
   //DEBUG_INIT;
 #endif
+  printf("Cleanup fun-n entered, v2!\n");
   for (uint32_t i=0; i<tile;i++){
+    printf("Inside loop: before reset!\n");
     volatile uint32_t res_reset = *(volatile uint32_t*)(destroy_tile_addr | base[i]);
+    printf("Inside loop: after reset!\n");
     #ifdef PRI
     printf("RESET:%d\n",res_reset);
     #endif
   }
+
+  printf("Cleanup fun-n to return!\n");
   return 1; //can this fail? security issues?
 }
 

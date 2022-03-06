@@ -154,60 +154,59 @@ int main(int argc, char ** argv) {
     uint32_t id, core_num;
     id = 0;
     core_num = 1;
+    printf("Cohort MMU Driver test application entered!\n");
+
     // only make the first ariane initialize the tile
-    if (id == 0) init_tile(NUM_A);
+    // if (id == 0) init_tile(NUM_A);
 
-    if (PRODUCER_FIFO_LENGTH < CONSUMER_FIFO_LENGTH ) {
-        printf("trying to consume more than produced, exiting\n");
-        fflush(stdout);
-        exit(-1);
-    }
+    // if (PRODUCER_FIFO_LENGTH < CONSUMER_FIFO_LENGTH ) {
+    //     printf("trying to consume more than produced, exiting\n");
+    //     fflush(stdout);
+    //     exit(-1);
+    // }
     
-    // 32 bits elements, fifo length = 8
-    fifo_ctrl_t *sw_to_cohort_fifo = fifo_init( 512 + 32, 64, 0);
-    fifo_ctrl_t *cohort_to_sw_fifo = fifo_init( 512 + 32, 64, 1);
-    void *acc_address = memalign(128, 128);
-    memset(acc_address, 0, 128);
+    // // 32 bits elements, fifo length = 8
+    // fifo_ctrl_t *sw_to_cohort_fifo = fifo_init( 512 + 32, 64, 0);
+    // fifo_ctrl_t *cohort_to_sw_fifo = fifo_init( 512 + 32, 64, 1);
+    // void *acc_address = memalign(128, 128);
+    // memset(acc_address, 0, 128);
 
-    baremetal_write(0, 6, (uint64_t) acc_address);
+    // baremetal_write(0, 6, (uint64_t) acc_address);
 
-    // clear counter and turn on the monitor
-    cohort_on();
-    unsigned long long int write_value = 11;
-    unsigned long long int serialization_value = SERIALIZATION_VAL;
-    unsigned long long int deserialization_value = DESERIALIZATION_VAL;
-    unsigned long long int wait_counter = WAIT_COUNTER_VAL;
-    unsigned long long int backoff_counter = 0x800;
+    // // clear counter and turn on the monitor
+    // cohort_on();
+    // unsigned long long int write_value = 11;
+    // unsigned long long int serialization_value = SERIALIZATION_VAL;
+    // unsigned long long int deserialization_value = DESERIALIZATION_VAL;
+    // unsigned long long int wait_counter = WAIT_COUNTER_VAL;
+    // unsigned long long int backoff_counter = 0x800;
 
-    write_value |= backoff_counter << 48;
-    write_value |= serialization_value << 32;
-    write_value |= deserialization_value << 16;
-    write_value |= wait_counter << 4;
-    __sync_synchronize;
+    // write_value |= backoff_counter << 48;
+    // write_value |= serialization_value << 32;
+    // write_value |= deserialization_value << 16;
+    // write_value |= wait_counter << 4;
+    // __sync_synchronize;
     
-    sleep(4);
+    // sleep(4);
     
-    // start the count
-    baremetal_write(0, 7, write_value);
+    // // start the count
+    // baremetal_write(0, 7, write_value);
    
-    printf("Cohort MMU Driver test application entered, v2!\n");
-    fflush(stdout);
+    // printf("Cohort MMU Driver test application entered, main!\n");
 
-    unsigned int *base_ptr;
+    // unsigned int *base_ptr;
 
-    int ret = syscall(258, base_ptr);
+    // int ret = syscall(258, base_ptr);
 
-    printf("Syscall result for the mmu_notifier register is: %d\n", ret);
-    fflush(stdout);
-    printf("Bse pointer addr for the mmu_notifier register is: %x\n", *base_ptr);
-    fflush(stdout);
+    // printf("Syscall result for the mmu_notifier register is: %d\n", ret);
+    // printf("Bse pointer addr for the mmu_notifier register is: %x\n", *base_ptr);
 
-    // to be continued for testing page_fault and tlb_flush :)
+    // // to be continued for testing page_fault and tlb_flush :)
    
-    cohort_off();
-    fifo_deinit(sw_to_cohort_fifo);
-    fifo_deinit(cohort_to_sw_fifo);
-    free(acc_address);
+    // cohort_off();
+    // fifo_deinit(sw_to_cohort_fifo);
+    // fifo_deinit(cohort_to_sw_fifo);
+    // free(acc_address);
 
 #ifdef BARE_METAL
     if (ret == 7) {
@@ -216,5 +215,8 @@ int main(int argc, char ** argv) {
         fail();
     }
 #endif
+
+    printf("Cohort MMU: Before return!\n");
+
     return 0;
 }
